@@ -2,11 +2,35 @@
 const Usuario = require('../entities/Usuario')
 const Cliente = require('../entities/Cliente')
 const bcrypt = require('bcrypt')
+
+const jwt = require('jsonwebtoken')
 const GlobalUserController = {
     login: async (req, res) => {
         const { email, password } = req.body;
     
         try {
+          // Si no es un usuario, buscar en la tabla `Cliente`
+          const cliente = await Cliente.findOne({ where: { email } });
+          
+          if (cliente) {
+            // Comparar la contraseña
+            const isMatch = await bcrypt.compare(password, cliente.password);
+            if (isMatch) {
+              // Generar el token
+              const token = jwt.sign({ id: cliente.id_cliente }, process.env.JWT_SECRET, {
+                expiresIn: '1h',
+              });
+              res.cookie('token',{
+                token,
+                httpOnly: true,
+                maxAge: 3600000
+              })
+              return res.json({ token, role: 'cliente', message: 'Login exitoso (Cliente)' });
+            } else {
+              return res.status(401).json({ error: 'Credenciales incorrectas' });
+            }
+          }
+
           // Intentar encontrar el usuario en la tabla `Usuario`
           const usuario = await Usuario.findOne({ where: { email } });
     
@@ -18,29 +42,17 @@ const GlobalUserController = {
               const token = jwt.sign({ id: usuario.id_usuario, role: usuario.id_rol }, process.env.JWT_SECRET, {
                 expiresIn: '1h',
               });
+              res.cookie('token',{
+                token,
+                httpOnly: true,
+                maxAge: 3600000
+              })
               return res.json({ token, role: 'usuario', message: 'Login exitoso (Usuario)' });
             } else {
               return res.status(401).json({ error: 'Credenciales incorrectas' });
             }
           }
-    
-          // Si no es un usuario, buscar en la tabla `Cliente`
-          const cliente = await Cliente.findOne({ where: { email } });
-    
-          if (cliente) {
-            // Comparar la contraseña
-            const isMatch = await bcrypt.compare(password, cliente.password);
-            if (isMatch) {
-              // Generar el token
-              const token = jwt.sign({ id: cliente.id_cliente }, process.env.JWT_SECRET, {
-                expiresIn: '1h',
-              });
-              return res.json({ token, role: 'cliente', message: 'Login exitoso (Cliente)' });
-            } else {
-              return res.status(401).json({ error: 'Credenciales incorrectas' });
-            }
-          }
-    
+          
           // Si no se encuentra el email en ninguna tabla
           return res.status(404).json({ error: 'Usuario no encontrado' });
         } catch (error) {

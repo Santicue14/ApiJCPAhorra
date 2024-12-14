@@ -35,9 +35,11 @@ DatosComplementarios.init(
     },
     latitud: {
       type: DataTypes.FLOAT,
+      defaultValue: 0
     },
     longitud: {
       type: DataTypes.FLOAT,
+      defaultValue: 0
     },
     telefono: {
       type: DataTypes.STRING(15),

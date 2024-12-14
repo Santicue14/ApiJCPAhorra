@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser');
 const GlobalUserRoutes = require('./src/routes/globaluser.routes');
 const SoporteControllerRoutes = require('./src/routes/soporte.routes');
 const NegociosRoutes = require('./src/routes/negocios.routes');
+const ClientesRoutes = require('./src/routes/clientes.routes');
 const app = express();
 const { PORT } = process.env;
 
@@ -23,7 +24,7 @@ app.use(cors({
 app.use('/auth',GlobalUserRoutes)
 app.use('/support',SoporteControllerRoutes)
 app.use('/negocios',NegociosRoutes)
-
+app.use('/clientes',ClientesRoutes)
 // Conexión a la base de datos
 sequelize.authenticate()
   .then(() => {
@@ -34,7 +35,7 @@ sequelize.authenticate()
   });
 
 // Sincronizar los modelos
-sequelize.sync({ alter: true })
+sequelize.sync()
   .then(() => {
     console.log('Modelos sincronizados');
   })
@@ -42,6 +43,6 @@ sequelize.sync({ alter: true })
     console.error('Error sincronizando los modelos:', error);
   });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0',() => {
   console.log('API cargada con éxito');
 });
