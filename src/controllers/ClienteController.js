@@ -1,5 +1,7 @@
 const Cliente = require("../entities/Cliente")
+const Cupones = require("../entities/Cupones")
 const DatosComplementarios = require("../entities/DatosComplementarios")
+const generarToken = require("../utilities/generateToken")
 
 const ClienteController = {
     cargarDatosComplementarios: async (req,res)=>{
@@ -22,6 +24,36 @@ const ClienteController = {
         } catch (error) {
             console.error(error)
             return res.status(500).json({message: 'Error al cargar datos complementarios'})
+        }
+    },
+    listarCupones: async(req,res)=>{
+        try {
+            const cupones = await Cupones.findAll()
+            if(cupones.length>0){
+                return res.status(200).json(cupones)
+            }   
+            return res.status(200).json({message:'La consulta se ejecutó correctamente pero no hay cupones disponibles'})
+        } catch (error) {
+            return res.status(500).json({message:'No se han podido listar los cupones por un error del servidor'})
+        }
+    },
+    seleccionarCupon : async(req,res)=>{
+        try {
+            const {id_cupon} = req.params
+            const cliente = req.user
+
+            const cupon = await Cupones.findByPk(id_cupon)
+            if(!cupon){return res.status(404).json({message: 'Cupón no encontrado'})}
+
+            const token = generarToken()
+
+            return res.status(200).json({
+                message: 'Proporcione este token el administrador del negocio',
+                token
+            })
+
+        } catch (error) {
+            return res.status(500).json({message: 'Error al seleccionar el cupón'})
         }
     }
 }

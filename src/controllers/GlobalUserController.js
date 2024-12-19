@@ -9,7 +9,7 @@ const GlobalUserController = {
         const { email, password } = req.body;
     
         try {
-          // Si no es un usuario, buscar en la tabla `Cliente`
+          //buscar en la tabla `Cliente`
           const cliente = await Cliente.findOne({ where: { email } });
           
           if (cliente) {
@@ -25,6 +25,7 @@ const GlobalUserController = {
                 httpOnly: true,
                 maxAge: 3600000
               })
+              await cliente.update({fecha_ultimo_acceso: Date.now()})
               return res.json({ token, role: 'cliente', message: 'Login exitoso (Cliente)' });
             } else {
               return res.status(401).json({ error: 'Credenciales incorrectas' });
@@ -89,6 +90,21 @@ const GlobalUserController = {
           return res.status(500).json({ error: 'Error en el servidor' });
         }
       },
+      logout: async (req,res)=>{
+        try {
+        
+          if(req.user){
+            res.clearCookie('token', {httpOnly: true})
+            return res.status(200).json({message: 'Logout exitoso'})
+          }else{
+            return res.status(400).json({message: 'No estás logueado'})
+          }
+        } 
+      
+      catch (error) {
+        
+      }
+      }
 }
 
 module.exports = {GlobalUserController}

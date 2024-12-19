@@ -1,6 +1,9 @@
-const { DataTypes } = require("sequelize");
-import sequelize from '../../config/database'
-const ClientesCupones = sequelize.define('ClientesCupones', {
+const { DataTypes, Model } = require("sequelize");
+const sequelize = require('../../config/database')
+
+class ClientesCupones extends Model {}
+
+ClientesCupones.init({
     id_cliente: {
         type: DataTypes.INTEGER,
         references: {
@@ -20,7 +23,14 @@ const ClientesCupones = sequelize.define('ClientesCupones', {
         allowNull: false,
         defaultValue: DataTypes.NOW,
     },
-}, {
+},
+{
+    sequelize,
     tableName: 'clientes_cupones',
-    timestamps: false,
-});
+    modelName: 'ClientesCupones',
+    timestamps: false
+}
+)
+
+
+module.exports = ClientesCupones
